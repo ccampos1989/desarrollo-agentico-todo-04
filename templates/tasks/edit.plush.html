@@ -1,6 +1,6 @@
 <header class="page-header">
   <a href="/" class="back-link"><span aria-hidden="true">←</span> Volver a la lista</a>
-  <h1>Editar tarea</h1>
+  <h1>Editar tarea <span class="task-number">#<%= task.Number %></span></h1>
 </header>
 
 <form action="/tasks/<%= task.ID %>" method="POST" class="edit-task">
