@@ -1,6 +1,7 @@
 package actions
 
 import (
+	"fmt"
 	"net/url"
 	"strings"
 
@@ -236,4 +237,59 @@ func (as *ActionSuite) Test_TasksUpdate_NotFound() {
 func (as *ActionSuite) Test_TasksUpdate_InvalidID() {
 	res := as.HTML("/tasks/no-es-un-uuid").Put(url.Values{"title": {"Título nuevo"}})
 	as.Equal(404, res.Code)
+}
+
+func (as *ActionSuite) Test_TasksIndex_ShowsNumbersInCreationOrder() {
+	a := &models.Task{Title: "Primera"}
+	verrs, err := as.DB.ValidateAndCreate(a)
+	as.NoError(err)
+	as.False(verrs.HasAny())
+	b := &models.Task{Title: "Segunda"}
+	verrs, err = as.DB.ValidateAndCreate(b)
+	as.NoError(err)
+	as.False(verrs.HasAny())
+
+	res := as.HTML("/").Get()
+	as.Equal(200, res.Code)
+	body := res.Body.String()
+
+	markA := fmt.Sprintf(`class="task-number">#%d`, a.Number)
+	markB := fmt.Sprintf(`class="task-number">#%d`, b.Number)
+	as.Contains(body, markA)
+	as.Contains(body, markB)
+	as.Less(strings.Index(body, markA), strings.Index(body, markB))
+}
+
+func (as *ActionSuite) Test_TasksCreate_IgnoresSubmittedNumber() {
+	ref := &models.Task{Title: "Referencia"}
+	verrs, err := as.DB.ValidateAndCreate(ref)
+	as.NoError(err)
+	as.False(verrs.HasAny())
+
+	res := as.HTML("/tasks").Post(url.Values{"title": {"Con número"}, "number": {"999999"}})
+	as.Equal(303, res.Code)
+
+	task := &models.Task{}
+	as.NoError(as.DB.Where("title = ?", "Con número").First(task))
+	as.Equal(ref.Number+1, task.Number)
+}
+
+func (as *ActionSuite) Test_TasksUpdate_KeepsNumber() {
+	task := as.taskForEditing(false)
+	n := task.Number
+
+	res := as.HTML("/tasks/%s", task.ID).Put(url.Values{"title": {"Otro"}, "number": {"999999"}})
+	as.Equal(303, res.Code)
+
+	as.NoError(as.DB.Reload(task))
+	as.Equal("Otro", task.Title)
+	as.Equal(n, task.Number)
+}
+
+func (as *ActionSuite) Test_TasksEdit_ShowsNumber() {
+	task := as.taskForEditing(false)
+
+	res := as.HTML("/tasks/%s/edit", task.ID).Get()
+	as.Equal(200, res.Code)
+	as.Contains(res.Body.String(), fmt.Sprintf("#%d", task.Number))
 }

@@ -16,6 +16,7 @@ const TitleMaxLength = 200
 // Task representa una tarea de la lista.
 type Task struct {
 	ID        uuid.UUID `json:"id" db:"id" form:"-"`
+	Number    int       `json:"number" db:"number" form:"-"`
 	Title     string    `json:"title" db:"title" form:"title"`
 	Completed bool      `json:"completed" db:"completed" form:"-"`
 	CreatedAt time.Time `json:"created_at" db:"created_at" form:"-"`
@@ -24,6 +25,11 @@ type Task struct {
 
 // Tasks es una colección de Task.
 type Tasks []Task
+
+// BeforeCreate asigna el siguiente número correlativo desde la secuencia de la base de datos.
+func (t *Task) BeforeCreate(tx *pop.Connection) error {
+	return tx.Store.Get(&t.Number, "SELECT nextval('tasks_number_seq')")
+}
 
 // Validate se ejecuta en cada llamada a los métodos "pop.Validate*".
 func (t *Task) Validate(tx *pop.Connection) (*validate.Errors, error) {

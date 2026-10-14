@@ -121,7 +121,7 @@ h1 {
 
 .task {
   display: grid;
-  grid-template-columns: 44px minmax(0, 1fr) auto;
+  grid-template-columns: 44px auto minmax(0, 1fr) auto;
   align-items: start;
   column-gap: 0.3rem;
   min-height: 61px;
@@ -135,6 +135,15 @@ h1 {
   padding: 0.65rem 0;
   overflow-wrap: anywhere;
   line-height: 1.55;
+}
+
+.task-number {
+  align-self: center;
+  padding: 0.65rem 0.35rem 0.65rem 0;
+  color: var(--color-muted);
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 .task-toggle-button,
@@ -434,7 +443,7 @@ input:focus-visible {
   }
 
   .task {
-    grid-template-columns: 36px minmax(0, 1fr) auto;
+    grid-template-columns: 36px auto minmax(0, 1fr) auto;
   }
 
   .task-toggle-button,

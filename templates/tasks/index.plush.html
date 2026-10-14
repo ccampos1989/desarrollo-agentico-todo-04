@@ -29,6 +29,7 @@
               <span class="toggle-label sr-only"><%= if (t.Completed) { %>Reabrir<% } else { %>Completar<% } %></span>
             </button>
           </form>
+          <span class="task-number">#<%= t.Number %></span>
           <span class="task-title"><%= t.Title %></span>
           <%= if (t.Completed) { %>
             <span class="task-status">Completada</span>
